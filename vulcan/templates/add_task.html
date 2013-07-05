@@ -1,0 +1,68 @@
+{% extends "commons/base.html" %}
+
+{% block title %}form test{% endblock %}
+
+{% block content %}
+	{{error}}
+	添加任务：
+	{% if error %}
+		<p style="red"> Please submit a search term.</p>
+	{% endif %}
+	<form action="/task/" method="post">
+		<table>
+			<tr>
+				<td>任务名<input type="text" name="taskname"></td>
+			</tr>
+       		<tr>
+				<td>
+					执行阶段
+					<select name="stageid">
+						{% for stage in stages %}
+        					<option value="{{stage.stage_id}}">{{stage.stage_name}}</option>
+						{% endfor %}
+        				<!-- <option value="1">需求</option>
+        				<option value="2">开发</option>
+        				<option value="3">测试</option>
+        				<option value="4">上线</option> -->
+        			</select>
+        		</td>
+			</tr>
+        	<tr>
+				<td>结束时间<input type="date" autocomplete="on"  name="endtime"></td>
+			</tr>
+        	<tr>
+				<td>
+					执行人
+						{% if users %}
+						<select name="userid">
+							{% for user in users %}
+        						<option value="{{user.user_id}}">{{user.nick}}</option>
+							{% endfor %}
+	        			</select>
+	        			{% endif %}
+        		</td>
+			</tr>
+        	<tr>
+				<td>优先级
+					<select name="priority">
+						{% for priority in prioritys %}
+        						<option value="{{priority.priority_id}}">{{priority.priority_name}}</option>
+						{% endfor %}
+<!--         				<option value="1">低</option>
+        				<option value="2">中</option>
+        				<option value="3">高</option>
+        				<option value="4">紧急</option> -->
+        			</select>
+        		</td>
+			</tr>
+			<tr>
+				<td>备注
+					<textarea name="taskdescription" rows="5" cols="60"></textarea>
+        		</td>
+			</tr>
+        	<tr>
+				<td><input type="submit" value="添加"></td>
+			</tr>
+		</table>
+    </form>
+{% endblock %}

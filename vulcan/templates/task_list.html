@@ -1,0 +1,276 @@
+{% extends "commons/base.html" %}
+
+{% block title %}search result{% endblock %}
+{% block content %}
+	{% if tasks %}
+	<div class="well">
+		<p>统计信息：共有 {{ tasks|length }} 个任务.
+			{% if status == 0 %}
+			其中<br>
+			需求阶段：{{ rcount }} 个;
+			开发阶段：{{ dcount }} 个<br>
+			测试阶段：{{ tcount }} 个;
+			上线阶段：{{ ocount }} 个<br>
+			{% endif %}
+		</p>
+	</div>
+	<div class="well">
+		
+		<div class="btn-toolbar">
+			<div class="btn-group">
+			  	<a class="add_task btn btn-primary">添加新任务</a>
+			  </div>
+			  <div class="btn-group">
+			    <a class="btn {% if page.pagesize == 10 %}active{% endif %}" href="/tasks/?page={{ page.currentpage }}&pagesize=10">10</a>
+			    <a class="btn {% if page.pagesize == 20 %}active{% endif %}" href="/tasks/?page={{ page.currentpage }}&pagesize=20">20</a>
+			    <a class="btn {% if page.pagesize == 50 %}active{% endif %}" href="/tasks/?page={{ page.currentpage }}&pagesize=50">50</a>
+			  </div>
+		</div>
+
+	</div>
+		<table id="task_add_table" class="table table-bordered" style="display: none">
+			<thead class="well">
+				<tr>
+					<th rowspan="1" align="center" width="150px">任务名</th>
+					<th colspan="1" align="center" width="80px">阶段</th>
+					<th rowspan="1" align="center" width="80px">执行人</th>
+					<th rowspan="1" align="center" width="80px">优先级</th>
+					<th rowspan="1" align="center" width="80px">结束时间</th>
+					<th rowspan="1" align="center" width="80px">备注【任务详情】</th>
+					<th rowspan="1" align="center" width="200px">#</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>
+						<textarea  name="taskname" class="data-input" rows="4" ></textarea>
+					</td>
+					
+					<td>
+						<select class="data-input span2" name="stageid">
+							{% for stage in stages %}
+	        					<option value="{{stage.stage_id}}">{{stage.stage_name}}</option>
+							{% endfor %}
+	        			</select>
+	        		</td>
+					<td>
+							{% if users %}
+							<select class="data-input span2" name="userid">
+								{% for user in users %}
+	        						<option value="{{user.user_id}}">{{user.nick}}</option>
+								{% endfor %}
+		        			</select>
+		        			{% endif %}
+	        		</td>
+					<td>
+						<select class="data-input span2" name="priority">
+							{% for priority in prioritys %}
+	        						<option value="{{priority.priority_id}}">{{priority.priority_name}}</option>
+							{% endfor %}
+	        			</select>
+	        		</td>
+	        		<td><input class="data-input span2" type="date" autocomplete="on"  name="endtime"></td>
+					<td>
+						<textarea class="data-input" name="taskdescription" rows="8" ></textarea>
+	        		</td>
+	        		<td>
+						<a class="btn btn-success"><i class="icon-ok-circle icon-white"></i>添加</a>
+						<a class="btn btn-danger"><i class="icon-remove-circle icon-white"></i>取消</a>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+    
+		<table id="task_table" class="table table-bordered" >
+			<thead>
+				<tr class="well">
+					<th rowspan="2" align="center" width="50px">ID</th>
+					<th rowspan="2" align="center" width="220">任务名</th>
+					<th colspan="4" align="center" width="100px">阶段</th>
+					<th rowspan="2" align="center" width="128px">执行人</th>
+					<th rowspan="2" align="center" width="128px">优先级</th>
+					<th rowspan="2" align="center" width="128px">时间点</th>
+					<th rowspan="2" align="center" width="220px">备注</th>
+					<th rowspan="2" align="center" width="150px"></th>
+				</tr>
+				<tr class="well">
+					<th width="15px">需求</th><th width="15px">开发</th><th width="15px">测试</th><th width="15px">上线</th>
+				</tr>
+			</thead>
+			<tbody>
+			{% for task in tasks %}
+			<tr
+			{% if task.iserror %}
+			 class="error"
+			{% elif task.iswarning %}
+			 class="warning"
+			{% endif %}
+			>
+				<td><strong>{{ task.task_id }}</strong></td>
+				<td filed="taskname">
+					<div class="task_unedit">{{ task.task_name }}</div>
+					<div class="task_edit" style="display: none"><textarea class="data-input"></textarea></div>
+				</td>
+				<td colspan="4" filed="stageid" >
+					<div class="task_unedit" default-value="{{ task.stage_id }}">
+							{% if task.requirement %}
+								<span class="label label-success">R</span>
+							{% else %}
+								<span class="label ">R</span>
+							{% endif %}
+							&nbsp;
+							{% if task.development %}
+								<span class="label label-success">D</span>
+							{% else %}
+								<span class="label ">D</span>
+							{% endif %}
+							&nbsp;
+							{% if task.testing %}
+								<span class="label label-success">T</span>
+							{% else %}
+								<span class="label ">T</span>
+							{% endif %}
+							&nbsp;
+							{% if task.online %}
+								<span class="label label-success">O</span>
+							{% else %}
+								<span class="label ">O</span>
+							{% endif %}
+					</div>
+					<div class="task_edit" style="display: none">
+						<select name="stageid" class="data-input span2">
+							{% for stage in stages %}
+	        					<option value="{{stage.stage_id}}">{{stage.stage_name}}</option>
+							{% endfor %}
+        				</select>
+					</div>
+				</td>
+				
+				<td filed="userid">
+					<div class="task_unedit" default-value="{{ task.user_id }}">
+						{% for user in users %}
+							{% if user.user_id == task.user_id %}
+								{{user.nick}} 
+							{% endif %}
+						{% endfor %}
+					</div>
+					<div class="task_edit" style="display: none">
+						<select name="userid" class="data-input span2">
+							{% for user in users %}
+								<option 
+									{% if user.user_id == task.user_id %}
+										selected {% endif %} 
+									value="{{user.user_id}}">
+									{{user.nick}}
+			        			</option>
+							{% endfor %}
+			        	</select>
+		        	</div>
+				</td>
+				<td filed="priority">
+						<div class="task_unedit" default-value="{{ task.priority }}">
+							{% for priority in prioritys %}
+    							{% if priority.priority_id == task.priority %}
+    								<span class="label 
+    								{% if priority.priority_id == 4 %}
+    									label-important
+    								{% endif %}
+    								{% if priority.priority_id == 3 %}
+    									label-warning
+    								{% endif %}
+    								{% if priority.priority_id == 2 %}
+    									label-success
+    								{% endif %}
+    								">
+    									{{priority.priority_name}}
+    								</span>
+    							{% endif %} 
+							{% endfor %}
+						</div>
+						<div class="task_edit" style="display: none">
+							<select name="priority" class="data-input span2">
+								{% for priority in prioritys %}
+		        						<option 
+		        							{% if priority.priority_id == task.priority %}
+		        								selected {% endif %} 
+		        						value="{{priority.priority_id}}">
+		        							{{priority.priority_name}}
+		        						</option>
+								{% endfor %}
+							</select>
+						</div>
+					
+				</td>
+				<td>
+					<!-- {{ task.create_time|date:"Y-m-d H:i" }} -->
+					S:{{ task.create_time|date:"Y-m-d" }}<br>
+					E:{{ task.end_time|date:"Y-m-d" }}
+				</td>
+				<td filed="taskdescription">
+					<div class="task_unedit">{{ task.task_description }}</div>
+					<div class="task_edit" style="display: none"><textarea class="data-input" ></textarea></div>
+				</td>
+				<td>
+					<div class="task_unedit">
+						<a class="edit btn btn-primary"><i class="icon-edit icon-white"></i></a>
+						<a class="ok btn btn-success"><i class="icon-ok icon-white"></i></a>
+						<a class="cancel btn btn-danger" ><i class="icon-remove icon-white"></i></a>
+					</div>
+					<div class="task_edit" style="display: none">
+						<a class="ok btn btn-success"><i class="icon-ok icon-white"></i></a>
+						<a class="cancel btn btn-danger" ><i class="icon-remove icon-white"></i></a>
+					</div>
+				</td>
+			</tr>
+			{% endfor %}
+			</tbody>
+		</table>
+		
+		
+		<div class="pagination pagination-centered">
+  			<ul>
+  			
+  			 	<li><a href="/tasks/?page=1&pagesize={{ page.pagesize }}">First</a></li>
+  				{% if page.currentpage == 1%}
+			    	<li class="disabled"><a>Prev</a></li>
+			    {% else %}
+			    	<li><a href="/tasks/?page={{page.prevpage}}&pagesize={{ page.pagesize }}">Prev</a></li>
+			    {% endif %}
+			    
+			    {% for i in page.pagelist %}
+			    	{% if forloop.counter0 == 0 and i != 1 %}
+			    		<li class="disabled"><a>...</a></li>
+			    	{% endif %}
+			    	<li {% if i == page.currentpage %} class="active" {% endif %} ><a href="/tasks/?page={{i}}&pagesize={{ page.pagesize }}">{{ i }}</a></li>
+			  		{% if forloop.counter0 == page.display  and i != page.totalpage %}
+			    		<li class="disabled"><a>...</a></li>
+			    	{% endif %}
+			    {% endfor %}
+			    
+			    <li class="disabled"><a>
+			    	共 {{ page.total }} 任务，
+					共 {{ page.totalpage }} 页</a>
+			    </li>
+			    {% if page.currentpage == page.totalpage%}
+			    	<li class="disabled"><a>Next</a></li>
+			    {% else %}
+			    	<li><a href="/tasks/?page={{page.nextpage}}&pagesize={{ page.pagesize }}">Next</a></li>
+			    {% endif %}
+			    
+			    <li><a href="/tasks/?page={{ page.totalpage }}&pagesize={{ page.pagesize }}">Last</a></li>
+		  	</ul>
+		</div>
+		
+
+	{% else %}
+		<p>没有任务存在，【添加任务】.</p>
+	{% endif %}
+	
+	<div class="alert alert-message block-message warning">
+	  <a class="close" href="#">×</a>
+	  <p><strong>Holy guacamole! This is a warning!</strong> Best check yo self, you’re not looking too good. Nulla vitae elit libero, a pharetra augue. Praesent commodo cursus magna, vel scelerisque nisl consectetur et.</p>
+	  <div class="alert-actions">
+	    <a class="btn small" href="#">Take this action</a> <a class="btn small" href="#">Or do this</a>
+	  </div>
+	</div>
+{% endblock %}
